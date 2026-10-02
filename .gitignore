@@ -5,3 +5,25 @@ __pycache__
 /__pycache__
 /dump
 /Platform
+# Generated build artifacts
+.build/
+public/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Local editor files
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Build artifacts
+*.deb
+*.tar.gz
