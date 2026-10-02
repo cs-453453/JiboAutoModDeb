@@ -1,0 +1,62 @@
+name: Sync upstream source and publish apt repo
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-utils dpkg-dev gnupg ca-certificates git
+
+      - name: Sync source and build .deb + .dsc
+        env:
+          SOURCE_REPO: Jibo-Revival-Group/JiboAutoMod
+          SOURCE_BRANCH: main
+          PACKAGE_MAINTAINER: "JiboAutoModDeb Maintainers"
+        run: bash scripts/sync-and-build-deb.sh
+
+      - name: Generate apt repo metadata
+        env:
+          APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+          APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+          APT_GPG_PUBLIC_KEY: ${{ secrets.APT_GPG_PUBLIC_KEY }}
+        run: bash scripts/generate-apt-repo.sh
+
+      - name: Update release history
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/update-release-history.sh
+
+      - name: Generate landing page
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: bash scripts/generate-landing-page.sh
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
