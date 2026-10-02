@@ -566,3 +566,33 @@ python3 jibo_updater.py --ip 192.168.1.50 --tag v3.3.0
 Dry run:
 
 python3 jibo_updater.py --ip 192.168.1.50 --dry-run
+## APT REPO ONLY
+
+# Jibo Auto-Mod Debian apt repository
+
+This repository publishes the Jibo Auto-Mod package as a GitHub Pages apt repository.
+
+## What this does
+
+- Syncs the upstream Jibo Auto-Mod source from GitHub every day
+- Builds a .deb package
+- Generates apt metadata
+- Publishes it on GitHub Pages
+- Exposes a custom apt landing page
+- Tracks releases in releases.json
+
+## Daily schedule
+
+The workflow runs every day at 04:00 UTC.
+
+## Add the repo
+
+Signed version:
+
+```bash
+curl -fsSL https://YOUR_GITHUB_USERNAME.github.io/JiboAutoModDeb/keys/jibo-automod.asc \
+  | sudo gpg --dearmor -o /usr/share/keyrings/jibo-automod.gpg
+
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/jibo-automod.gpg] https://YOUR_GITHUB_USERNAME.github.io/JiboAutoModDeb stable main" \
+  | sudo tee /etc/apt/sources.list.d/jibo-automod.list
+
